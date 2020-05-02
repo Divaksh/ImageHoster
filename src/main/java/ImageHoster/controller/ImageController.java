@@ -5,6 +5,7 @@ import ImageHoster.model.Tag;
 import ImageHoster.model.User;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
+import ImageHoster.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +27,9 @@ public class ImageController {
 
     @Autowired
     private TagService tagService;
+
+    @Autowired
+    private UserService userService;
 
     //This method displays all the images in the user home page after successful login
     @RequestMapping("images")
@@ -92,12 +96,21 @@ public class ImageController {
     //The method first needs to convert the list of all the tags to a string containing all the tags separated by a comma and then add this string in a Model type object
     //This string is then displayed by 'edit.html' file as previous tags of an image
     @RequestMapping(value = "/editImage")
-    public String editImage(@RequestParam("imageId") Integer imageId, Model model) {
+    public String editImage(@RequestParam("imageId") Integer imageId, HttpSession session, Model model) {
         Image image = imageService.getImage(imageId);
-        String tags = convertTagsToString(image.getTags());
         model.addAttribute("image", image);
+
+        // if user is same send it to edit image form
+        if(userService.isUserLoggedInUser(image.getUser(),session)){
+            String tags = convertTagsToString(image.getTags()); // Added all tags to a string so these can be added in the HTML form in textbox
+            model.addAttribute("tags", tags);
+            return "images/edit";
+        }
+
+        List<Tag> tags = image.getTags(); // Added all tags in the list so HTML view can render all tags with loop
         model.addAttribute("tags", tags);
-        return "images/edit";
+        model.addAttribute("editError", "Only the owner of the image can edit the image");
+        return "images/image";
     }
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
