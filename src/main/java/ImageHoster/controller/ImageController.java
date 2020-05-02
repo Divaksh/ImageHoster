@@ -100,7 +100,7 @@ public class ImageController {
         Image image = imageService.getImage(imageId);
         model.addAttribute("image", image);
 
-        // if user is same send it to edit image form
+        // if user is owner send it to edit image form
         if(userService.isUserLoggedInUser(image.getUser(),session)){
             String tags = convertTagsToString(image.getTags()); // Added all tags to a string so these can be added in the HTML form in textbox
             model.addAttribute("tags", tags);
@@ -109,7 +109,8 @@ public class ImageController {
 
         List<Tag> tags = image.getTags(); // Added all tags in the list so HTML view can render all tags with loop
         model.addAttribute("tags", tags);
-        model.addAttribute("editError", "Only the owner of the image can edit the image");
+        String error = "Only the owner of the image can edit the image";
+        model.addAttribute("editError", error);
         return "images/image";
     }
 
@@ -152,9 +153,21 @@ public class ImageController {
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId) {
-        imageService.deleteImage(imageId);
-        return "redirect:/images";
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session, Model model) {
+        Image image = imageService.getImage(imageId);
+
+        // if user is owner then delete the image
+        if(userService.isUserLoggedInUser(image.getUser(),session)){
+            imageService.deleteImage(imageId);
+            return "redirect:/images";
+        }
+
+        String error = "Only the owner of the image can delete the image";
+        model.addAttribute("deleteError", error);
+        model.addAttribute("image", image);
+        List<Tag> tags = image.getTags(); // Added all tags in the list so HTML view can render all tags with loop
+        model.addAttribute("tags", tags);
+        return "images/image";
     }
 
 
