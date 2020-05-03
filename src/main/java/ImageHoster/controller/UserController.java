@@ -49,14 +49,14 @@ public class UserController {
             // If password doesn't match with the pattern
             // Send user back to the register page with filled data and error message
             model.addAttribute("User", user);
-            String error = "Password must contain at least 1 alphabet, 1 number & 1 special character";
+            String error = "Password must contain atleast 1 alphabet, 1 number & 1 special character";
             model.addAttribute("passwordTypeError", error);
             return "users/registration";
         }
 
         // if entered password matches the pattern register the user and send to the login page
         userService.registerUser(user);
-        return "redirect:/users/login";
+        return "users/login";
     }
 
     //This controller method is called when the request pattern is of type 'users/login'
