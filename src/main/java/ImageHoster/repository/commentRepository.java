@@ -11,7 +11,7 @@ import javax.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class commentRepository {
+public class CommentRepository {
 
   //Get an instance of EntityManagerFactory from persistence unit with name as 'imageHoster'
   @PersistenceUnit(unitName = "imageHoster")

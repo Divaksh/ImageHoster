@@ -25,6 +25,7 @@ public class Comment {
   @Column(name = "text", columnDefinition = "TEXT")
   private String text;
 
+  // LocalDate type data as per the requirement
   @Column(name = "created_date")
   private LocalDate createdDate;
 
