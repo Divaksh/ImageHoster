@@ -7,7 +7,6 @@ import ImageHoster.model.User;
 import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
-import ImageHoster.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class ImageController {
@@ -29,9 +29,6 @@ public class ImageController {
 
     @Autowired
     private TagService tagService;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private CommentService commentService;
@@ -55,12 +52,13 @@ public class ImageController {
     //Here a list of tags is added in the Model type object
     //this list is then sent to 'images/image.html' file and the tags are displayed
     @RequestMapping("/images/{imageId}/{title}")
-    public String showImage(@PathVariable("title") String title, @PathVariable("imageId") Integer imageId, Model model) {
-        Image image = imageService.getImageByTitle(title,imageId);
+    public String showImage(@PathVariable("imageId") Integer imageId, Model model) {
+        Image image = imageService.getImage(imageId);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
         List<Comment> comments = commentService.getAllComments(imageId); // Added all comments in the list so HTML view can render all comments with loop
         model.addAttribute("comments", comments);  // Added comment list to model
+
         return "images/image";
     }
 
@@ -103,12 +101,12 @@ public class ImageController {
     //The method first needs to convert the list of all the tags to a string containing all the tags separated by a comma and then add this string in a Model type object
     //This string is then displayed by 'edit.html' file as previous tags of an image
     @RequestMapping(value = "/editImage")
-    public String editImage(@RequestParam("imageId") Integer imageId, HttpSession session, Model model) {
+    public String editImage(@RequestParam("imageId") Integer imageId, HttpSession session, Model model, final RedirectAttributes redirectAttributes) {
         Image image = imageService.getImage(imageId);
         model.addAttribute("image", image);
 
         // if user is owner send it to edit image form
-        if(userService.isUserLoggedInUser(image.getUser(),session)){
+        if(isUserLoggedInUser(image.getUser(),session)){
             String tags = convertTagsToString(image.getTags()); // Added all tags to a string so these can be added in the HTML form in textbox
             model.addAttribute("tags", tags);
             return "images/edit";
@@ -120,8 +118,11 @@ public class ImageController {
         model.addAttribute("comments", comments);  // Added comment list to model
         String error = "Only the owner of the image can edit the image";
         model.addAttribute("editError", error);
-        return "images/image";
+        redirectAttributes.addAttribute("editError", error);
+        redirectAttributes.addFlashAttribute("editError", error);
+        return "redirect:/images/" + imageId + "/" + image.getTitle();
     }
+
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
     //The method receives the imageFile, imageId, updated image, along with the Http Session
@@ -162,23 +163,25 @@ public class ImageController {
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session, Model model) {
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session, Model model, final RedirectAttributes redirectAttributes) {
         Image image = imageService.getImage(imageId);
 
         // if user is owner then delete the image
-        if(userService.isUserLoggedInUser(image.getUser(),session)){
+        if(isUserLoggedInUser(image.getUser(),session)){
             imageService.deleteImage(imageId);
             return "redirect:/images";
         }
 
         String error = "Only the owner of the image can delete the image";
         model.addAttribute("deleteError", error);
+        redirectAttributes.addAttribute("deleteError", error);
+        redirectAttributes.addFlashAttribute("deleteError", error);
         model.addAttribute("image", image);
         List<Tag> tags = image.getTags(); // Added all tags in the list so HTML view can render all tags with loop
         model.addAttribute("tags", tags);
         List<Comment> comments = commentService.getAllComments(imageId); // Added all comments in the list so HTML view can render all comments with loop
         model.addAttribute("comments", comments);  // Added comment list to model
-        return "images/image";
+        return "redirect:/images/" + imageId + "/" + image.getTitle();
     }
 
 
@@ -222,5 +225,16 @@ public class ImageController {
         tagString.append(lastTag.getName());
 
         return tagString.toString();
+    }
+
+    // This method checks that given user is same as the logged in user or different
+    // This method can be used for user specific operations like edit, delete user images and user profile
+    public Boolean isUserLoggedInUser(User user, HttpSession session){
+        //Gets logged in user id from the user in session
+        Integer loggedInUserId = ((User) session.getAttribute("loggeduser")).getId();
+        if(user.getId()==loggedInUserId){
+            return true;
+        }
+        return false;
     }
 }
