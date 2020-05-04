@@ -80,18 +80,32 @@ public class ImageController {
     //Store all the tags in the database and make a list of all the tags using the findOrCreateTags() method
     //set the tags attribute of the image as a list of all the tags returned by the findOrCreateTags() method
     @RequestMapping(value = "/images/upload", method = RequestMethod.POST)
-    public String createImage(@RequestParam("file") MultipartFile file, @RequestParam("tags") String tags, Image newImage, HttpSession session) throws IOException {
+    public String createImage(@RequestParam("file") MultipartFile file, @RequestParam("tags") String tags, Image newImage, HttpSession session,
+     Model model, final RedirectAttributes redirectAttributes) throws IOException {
 
-        User user = (User) session.getAttribute("loggeduser");
-        newImage.setUser(user);
-        String uploadedImageData = convertUploadedFileToBase64(file);
-        newImage.setImageFile(uploadedImageData);
+        // These are the allowed file type which can be uploaded by user
+        String allowedImages = "image/png image/bmp image/x-windows-bmp image/gif image/x-icon image/jpeg image/vnd.wap.wbmp";
 
-        List<Tag> imageTags = findOrCreateTags(tags);
-        newImage.setTags(imageTags);
-        newImage.setDate(new Date());
-        imageService.uploadImage(newImage);
-        return "redirect:/images";
+        // if uploaded image one of the allowed file type then upload the image
+        if(allowedImages.contains(file.getContentType())){
+            User user = (User) session.getAttribute("loggeduser");
+            newImage.setUser(user);
+            String uploadedImageData = convertUploadedFileToBase64(file);
+            newImage.setImageFile(uploadedImageData);
+
+            List<Tag> imageTags = findOrCreateTags(tags);
+            newImage.setTags(imageTags);
+            newImage.setDate(new Date());
+            imageService.uploadImage(newImage);
+            return "redirect:/images";
+        }
+
+        //If no supported file type is found return to same page with error message
+        String error = "Please upload png, bmp, gif, jpeg and wbmp image file type";
+        model.addAttribute("wrongImage", error);
+        redirectAttributes.addAttribute("wrongImage", error);
+        redirectAttributes.addFlashAttribute("wrongImage", error);
+        return "redirect:/images/upload";
     }
 
     //This controller method is called when the request pattern is of type 'editImage'
@@ -216,6 +230,11 @@ public class ImageController {
     //Returns the string
     private String convertTagsToString(List<Tag> tags) {
         StringBuilder tagString = new StringBuilder();
+
+        //If there is no tag then return empty string so edit image form throws no error
+        if(tags.size()==0){
+            return "";
+        }
 
         for (int i = 0; i <= tags.size() - 2; i++) {
             tagString.append(tags.get(i).getName()).append(",");

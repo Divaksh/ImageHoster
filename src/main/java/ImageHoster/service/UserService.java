@@ -2,7 +2,6 @@ package ImageHoster.service;
 
 import ImageHoster.model.User;
 import ImageHoster.repository.UserRepository;
-import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,17 +31,4 @@ public class UserService {
             return null;
         }
     }
-
-    // This method checks that given user is same as the logged in user or different
-    // This method can be used for user specific operations like edit, delete user images and user profile
-    public Boolean isUserLoggedInUser(User user, HttpSession session){
-        //Gets logged in user id from the user in session
-        Integer loggedInUserId = ((User) session.getAttribute("loggeduser")).getId();
-        if(user.getId()==loggedInUserId){
-            return true;
-        }
-        return false;
-    }
-
-
 }
