@@ -217,6 +217,11 @@ public class ImageController {
     private String convertTagsToString(List<Tag> tags) {
         StringBuilder tagString = new StringBuilder();
 
+        //If there is no tag then return empty string so edit image form throws no error
+        if(tags.size()==0){
+            return "";
+        }
+
         for (int i = 0; i <= tags.size() - 2; i++) {
             tagString.append(tags.get(i).getName()).append(",");
         }
