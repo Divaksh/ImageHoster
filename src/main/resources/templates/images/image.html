@@ -52,7 +52,7 @@
             </li>
         </ul>
 
-        <!--<h5 class="f4 mb0 underline">Comments</h5>-->
+        <h5 class="f4 mb0 underline">Comments</h5>
         <!-- A form to upload a comment to a particular image-->
         <form method="POST" enctype="multipart/form-data"
               th:action="'/image/'+ ${image.id} + '/' + ${image.title} + '/comments'">
@@ -67,6 +67,7 @@
                        value="Submit">
             </div>
         </form>
+        <div th:if="${emptyCommentError}">Comment can not be empty.</div>
 
         <!-- A piece of code displaying all the comments to a particular image-->
         <div class="comments mt5">
