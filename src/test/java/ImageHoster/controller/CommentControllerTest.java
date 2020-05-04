@@ -17,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 
 @RunWith(SpringRunner.class)
@@ -62,5 +63,36 @@ public class CommentControllerTest {
                 .param("comment", "This comment is for testing purpose")
                 .session(session))
                 .andExpect(redirectedUrl("/images/1/new"));
+    }
+
+    //This test checks the controller logic when user posts empty whether the Model type object contains the desired attribute with desired value
+    @Test
+    public void createEmptyComment() throws Exception {
+        User user = new User();
+        UserProfile userProfile = new UserProfile();
+        userProfile.setId(1);
+        userProfile.setEmailAddress("a@gmail.com");
+        userProfile.setFullName("Abhi Mahajan");
+        userProfile.setMobileNumber("9876543210");
+        user.setProfile(userProfile);
+        user.setId(1);
+        user.setUsername("Abhi");
+        user.setPassword("password1@");
+
+        session = new MockHttpSession();
+        session.setAttribute("loggeduser", user);
+
+
+        Image image = new Image();
+        image.setId(1);
+        image.setTitle("new");
+        image.setDescription("This image is for testing purpose");
+
+        Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
+
+        this.mockMvc.perform(post("/image/1/new/comments")
+            .param("comment", "")
+            .session(session))
+            .andExpect(model().attribute("emptyCommentError", "Comment can not be empty"));
     }
 }
