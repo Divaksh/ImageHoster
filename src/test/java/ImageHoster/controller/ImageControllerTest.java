@@ -311,6 +311,40 @@ public class ImageControllerTest {
                 .session(session))
                 .andExpect(model().attribute("deleteError", "Only the owner of the image can delete the image"));
     }
+
+    //This test checks the controller logic when the logged in submits the image to be uploaded is has valid file type,
+    // if not then check the Model type object contains the desired attribute with desired value
+    @Test
+    public void uploadUnsupportedImageWithPostRequest() throws Exception {
+        User user = new User();
+        UserProfile userProfile = new UserProfile();
+        userProfile.setId(1);
+        userProfile.setEmailAddress("a@gmail.com");
+        userProfile.setFullName("Abhi Mahajan");
+        userProfile.setMobileNumber("9876543210");
+        user.setProfile(userProfile);
+        user.setId(1);
+        user.setUsername("Abhi");
+        user.setPassword("password1@");
+
+        session = new MockHttpSession();
+        session.setAttribute("loggeduser", user);
+
+        MockMultipartFile mockImage = new MockMultipartFile("file", "image.jpg", "octet-stream", "some_image".getBytes());
+
+        String tags = "dog,labrador";
+
+        Image image = new Image();
+        image.setTitle("new");
+        image.setDescription("This image is for testing purpose");
+        this.mockMvc.perform(multipart("/images/upload")
+            .file(mockImage)
+            .param("tags", tags)
+            .flashAttr("newImage", image)
+            .session(session))
+            .andExpect(model().attribute("wrongImage", "Please upload png, bmp, gif, jpeg and wbmp image file type"));
+    }
+
 }
 
 
