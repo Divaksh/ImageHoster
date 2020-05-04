@@ -1,12 +1,23 @@
 package ImageHoster.controller;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
 import ImageHoster.model.UserProfile;
+import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
-import ImageHoster.service.CommentService;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -18,332 +29,324 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(ImageController.class)
 public class ImageControllerTest {
-    protected MockHttpSession session;
 
-    @Autowired
-    private MockMvc mockMvc;
+  protected MockHttpSession session;
 
-    @MockBean
-    private ImageService imageService;
+  @Autowired
+  private MockMvc mockMvc;
 
-    @MockBean
-    private TagService tagService;
+  @MockBean
+  private ImageService imageService;
 
-    @MockBean
-    private CommentService CommentService;
+  @MockBean
+  private TagService tagService;
 
-    //This test checks the controller logic to get all the images after the user is logged in the application and checks whether the logic returns the html file 'images.html'
-    @Test
-    public void getUserImages() throws Exception {
-        User user = new User();
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(1);
-        userProfile.setEmailAddress("a@gmail.com");
-        userProfile.setFullName("Abhi Mahajan");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile);
-        user.setId(1);
-        user.setUsername("Abhi");
-        user.setPassword("password1@");
+  @MockBean
+  private CommentService CommentService;
 
-        session = new MockHttpSession();
-        session.setAttribute("loggeduser", user);
+  //This test checks the controller logic to get all the images after the user is logged in the application and checks whether the logic returns the html file 'images.html'
+  @Test
+  public void getUserImages() throws Exception {
+    User user = new User();
+    UserProfile userProfile = new UserProfile();
+    userProfile.setId(1);
+    userProfile.setEmailAddress("a@gmail.com");
+    userProfile.setFullName("Abhi Mahajan");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile);
+    user.setId(1);
+    user.setUsername("Abhi");
+    user.setPassword("password1@");
 
-        this.mockMvc.perform(get("/images").session(session))
-                .andExpect(view().name("images"))
-                .andExpect(content().string(containsString("Welcome User. These are the images")));
-    }
+    session = new MockHttpSession();
+    session.setAttribute("loggeduser", user);
 
-
-    //This test checks the controller logic when the logged in user sends the GET request to the server to get the details of a particular image and checks whether the logic returns the html file 'images/image.html'
-    @Test
-    public void showImage() throws Exception {
-        User user = new User();
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(1);
-        userProfile.setEmailAddress("a@gmail.com");
-        userProfile.setFullName("Abhi Mahajan");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile);
-        user.setId(1);
-        user.setUsername("Abhi");
-        user.setPassword("password1@");
-
-        session = new MockHttpSession();
-        session.setAttribute("loggeduser", user);
-
-        Image image = new Image();
-        image.setId(1);
-        image.setTitle("new");
-        image.setDescription("This image is for testing purpose");
-        image.setUser(user);
-
-        Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
-
-        this.mockMvc.perform(get("/images/1/new").session(session))
-                .andExpect(view().name("images/image"))
-                .andExpect(content().string(containsString("Welcome User. This is the image")));
-
-    }
+    this.mockMvc.perform(get("/images").session(session))
+        .andExpect(view().name("images"))
+        .andExpect(content().string(containsString("Welcome User. These are the images")));
+  }
 
 
-    //This test checks the controller logic when the logged in user sends a GET request to the server to get the form to upload an image in the application and checks whether the logic returns the html file 'images/upload.html'
-    @Test
-    public void uploadImageWithGetRequest() throws Exception {
-        User user = new User();
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(1);
-        userProfile.setEmailAddress("a@gmail.com");
-        userProfile.setFullName("Abhi Mahajan");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile);
-        user.setId(1);
-        user.setUsername("Abhi");
-        user.setPassword("password1@");
+  //This test checks the controller logic when the logged in user sends the GET request to the server to get the details of a particular image and checks whether the logic returns the html file 'images/image.html'
+  @Test
+  public void showImage() throws Exception {
+    User user = new User();
+    UserProfile userProfile = new UserProfile();
+    userProfile.setId(1);
+    userProfile.setEmailAddress("a@gmail.com");
+    userProfile.setFullName("Abhi Mahajan");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile);
+    user.setId(1);
+    user.setUsername("Abhi");
+    user.setPassword("password1@");
 
-        session = new MockHttpSession();
-        session.setAttribute("loggeduser", user);
+    session = new MockHttpSession();
+    session.setAttribute("loggeduser", user);
 
-        this.mockMvc.perform(get("/images/upload").session(session))
-                .andExpect(view().name("images/upload"))
-                .andExpect(content().string(containsString("Upload New Image")));
-    }
+    Image image = new Image();
+    image.setId(1);
+    image.setTitle("new");
+    image.setDescription("This image is for testing purpose");
+    image.setUser(user);
 
+    Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
 
-    //This test checks the controller logic when the logged in submits the image to be uploaded in the application and checks whether the logic returns the html file 'images.html'
-    @Test
-    public void uploadImageWithPostRequest() throws Exception {
-        User user = new User();
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(1);
-        userProfile.setEmailAddress("a@gmail.com");
-        userProfile.setFullName("Abhi Mahajan");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile);
-        user.setId(1);
-        user.setUsername("Abhi");
-        user.setPassword("password1@");
+    this.mockMvc.perform(get("/images/1/new").session(session))
+        .andExpect(view().name("images/image"))
+        .andExpect(content().string(containsString("Welcome User. This is the image")));
 
-        session = new MockHttpSession();
-        session.setAttribute("loggeduser", user);
-
-        MockMultipartFile mockImage = new MockMultipartFile("file", "image.jpg", "image/jpeg", "some_image".getBytes());
-
-        String tags = "dog,labrador";
-
-        Image image = new Image();
-        image.setTitle("new");
-        image.setDescription("This image is for testing purpose");
-        this.mockMvc.perform(multipart("/images/upload")
-                .file(mockImage)
-                .param("tags", tags)
-                .flashAttr("newImage", image)
-                .session(session))
-                .andExpect(redirectedUrl("/images"));
-    }
-
-    //This test checks the controller logic when the owner of the image sends the GET request to get the form to edit the image and checks whether the logic returns the html file 'images/edit.html'
-    @Test
-    public void editImageWithOwnerOfTheImage() throws Exception {
-        User user = new User();
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(1);
-        userProfile.setEmailAddress("a@gmail.com");
-        userProfile.setFullName("Abhi Mahajan");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile);
-        user.setId(1);
-        user.setUsername("Abhi");
-        user.setPassword("password1@");
-
-        session = new MockHttpSession();
-        session.setAttribute("loggeduser", user);
-
-        Image image = new Image();
-        image.setId(1);
-        image.setTitle("new");
-        image.setDescription("This image is for testing purpose");
-        image.setUser(user);
-
-        Tag tag = new Tag();
-        tag.setId(1);
-        tag.setName("dog");
-
-        List<Tag> tags = new ArrayList<>();
-        tags.add(tag);
-        image.setTags(tags);
-
-        Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
-
-        this.mockMvc.perform(get("/editImage")
-                .param("imageId", "1")
-                .session(session))
-                .andExpect(view().name("images/edit"))
-                .andExpect(content().string(containsString("Edit Image")));
-    }
+  }
 
 
-    //This test checks the controller logic when non owner of the image sends the GET request to get the form to edit the image and checks whether the Model type object contains the desired attribute with desired value
-    @Test
-    public void editImageWithNonOwnerOfTheImage() throws Exception {
-        User user = new User();
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(1);
-        userProfile.setEmailAddress("a@gmail.com");
-        userProfile.setFullName("Abhi Mahajan");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile);
-        user.setId(1);
-        user.setUsername("Abhi");
-        user.setPassword("password1@");
+  //This test checks the controller logic when the logged in user sends a GET request to the server to get the form to upload an image in the application and checks whether the logic returns the html file 'images/upload.html'
+  @Test
+  public void uploadImageWithGetRequest() throws Exception {
+    User user = new User();
+    UserProfile userProfile = new UserProfile();
+    userProfile.setId(1);
+    userProfile.setEmailAddress("a@gmail.com");
+    userProfile.setFullName("Abhi Mahajan");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile);
+    user.setId(1);
+    user.setUsername("Abhi");
+    user.setPassword("password1@");
 
-        session = new MockHttpSession();
-        session.setAttribute("loggeduser", user);
+    session = new MockHttpSession();
+    session.setAttribute("loggeduser", user);
 
-        User user1 = new User();
-        UserProfile userProfile1 = new UserProfile();
-        userProfile.setId(2);
-        userProfile.setEmailAddress("p@gmail.com");
-        userProfile.setFullName("Prerna");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile1);
-        user.setId(2);
-        user.setUsername("Prerna");
-        user.setPassword("password1@@");
-
-        Image image = new Image();
-        image.setId(1);
-        image.setTitle("new");
-        image.setDescription("This image is for testing purpose");
-        image.setUser(user1);
+    this.mockMvc.perform(get("/images/upload").session(session))
+        .andExpect(view().name("images/upload"))
+        .andExpect(content().string(containsString("Upload New Image")));
+  }
 
 
-        Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
+  //This test checks the controller logic when the logged in submits the image to be uploaded in the application and checks whether the logic returns the html file 'images.html'
+  @Test
+  public void uploadImageWithPostRequest() throws Exception {
+    User user = new User();
+    UserProfile userProfile = new UserProfile();
+    userProfile.setId(1);
+    userProfile.setEmailAddress("a@gmail.com");
+    userProfile.setFullName("Abhi Mahajan");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile);
+    user.setId(1);
+    user.setUsername("Abhi");
+    user.setPassword("password1@");
 
-        this.mockMvc.perform(get("/editImage")
-                .param("imageId", "1")
-                .session(session))
-                .andExpect(model().attribute("editError", "Only the owner of the image can edit the image"));
-    }
+    session = new MockHttpSession();
+    session.setAttribute("loggeduser", user);
 
-    //This test checks the controller logic when the owner of the image sends the DELETE request to delete the image and checks whether the logic returns the html file 'images.html'
-    @Test
-    public void deleteImageWithOwnerOfTheImage() throws Exception {
-        User user = new User();
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(1);
-        userProfile.setEmailAddress("a@gmail.com");
-        userProfile.setFullName("Abhi Mahajan");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile);
-        user.setId(1);
-        user.setUsername("Abhi");
-        user.setPassword("password1@");
+    MockMultipartFile mockImage = new MockMultipartFile("file", "image.jpg", "image/jpeg", "some_image".getBytes());
 
-        session = new MockHttpSession();
-        session.setAttribute("loggeduser", user);
+    String tags = "dog,labrador";
 
-        Image image = new Image();
-        image.setId(1);
-        image.setTitle("new");
-        image.setDescription("This image is for testing purpose");
-        image.setUser(user);
+    Image image = new Image();
+    image.setTitle("new");
+    image.setDescription("This image is for testing purpose");
+    this.mockMvc.perform(multipart("/images/upload")
+        .file(mockImage)
+        .param("tags", tags)
+        .flashAttr("newImage", image)
+        .session(session))
+        .andExpect(redirectedUrl("/images"));
+  }
 
-        Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
+  //This test checks the controller logic when the owner of the image sends the GET request to get the form to edit the image and checks whether the logic returns the html file 'images/edit.html'
+  @Test
+  public void editImageWithOwnerOfTheImage() throws Exception {
+    User user = new User();
+    UserProfile userProfile = new UserProfile();
+    userProfile.setId(1);
+    userProfile.setEmailAddress("a@gmail.com");
+    userProfile.setFullName("Abhi Mahajan");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile);
+    user.setId(1);
+    user.setUsername("Abhi");
+    user.setPassword("password1@");
 
-        this.mockMvc.perform(delete("/deleteImage")
-                .param("imageId", "1")
-                .session(session))
-                .andExpect(redirectedUrl("/images"));
-    }
+    session = new MockHttpSession();
+    session.setAttribute("loggeduser", user);
 
+    Image image = new Image();
+    image.setId(1);
+    image.setTitle("new");
+    image.setDescription("This image is for testing purpose");
+    image.setUser(user);
 
-    //This test checks the controller logic when non owner of the image sends the DELETE request to delete the image and checks whether the Model type object contains the desired attribute with desired value
-    @Test
-    public void deleteImageWithNonOwnerOfTheImage() throws Exception {
-        User user = new User();
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(1);
-        userProfile.setEmailAddress("a@gmail.com");
-        userProfile.setFullName("Abhi Mahajan");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile);
-        user.setId(1);
-        user.setUsername("Abhi");
-        user.setPassword("password1@");
+    Tag tag = new Tag();
+    tag.setId(1);
+    tag.setName("dog");
 
-        session = new MockHttpSession();
-        session.setAttribute("loggeduser", user);
+    List<Tag> tags = new ArrayList<>();
+    tags.add(tag);
+    image.setTags(tags);
 
-        User user1 = new User();
-        UserProfile userProfile1 = new UserProfile();
-        userProfile.setId(2);
-        userProfile.setEmailAddress("p@gmail.com");
-        userProfile.setFullName("Prerna");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile1);
-        user.setId(2);
-        user.setUsername("Prerna");
-        user.setPassword("password1@@");
+    Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
 
-        Image image = new Image();
-        image.setId(1);
-        image.setTitle("new");
-        image.setDescription("This image is for testing purpose");
-        image.setUser(user1);
+    this.mockMvc.perform(get("/editImage")
+        .param("imageId", "1")
+        .session(session))
+        .andExpect(view().name("images/edit"))
+        .andExpect(content().string(containsString("Edit Image")));
+  }
 
 
-        Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
+  //This test checks the controller logic when non owner of the image sends the GET request to get the form to edit the image and checks whether the Model type object contains the desired attribute with desired value
+  @Test
+  public void editImageWithNonOwnerOfTheImage() throws Exception {
+    User user = new User();
+    UserProfile userProfile = new UserProfile();
+    userProfile.setId(1);
+    userProfile.setEmailAddress("a@gmail.com");
+    userProfile.setFullName("Abhi Mahajan");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile);
+    user.setId(1);
+    user.setUsername("Abhi");
+    user.setPassword("password1@");
 
-        this.mockMvc.perform(delete("/deleteImage")
-                .param("imageId", "1")
-                .session(session))
-                .andExpect(model().attribute("deleteError", "Only the owner of the image can delete the image"));
-    }
+    session = new MockHttpSession();
+    session.setAttribute("loggeduser", user);
 
-    //This test checks the controller logic when the logged in submits the image to be uploaded is has valid file type,
-    // if not then check the Model type object contains the desired attribute with desired value
-    @Test
-    public void uploadUnsupportedImageWithPostRequest() throws Exception {
-        User user = new User();
-        UserProfile userProfile = new UserProfile();
-        userProfile.setId(1);
-        userProfile.setEmailAddress("a@gmail.com");
-        userProfile.setFullName("Abhi Mahajan");
-        userProfile.setMobileNumber("9876543210");
-        user.setProfile(userProfile);
-        user.setId(1);
-        user.setUsername("Abhi");
-        user.setPassword("password1@");
+    User user1 = new User();
+    UserProfile userProfile1 = new UserProfile();
+    userProfile.setId(2);
+    userProfile.setEmailAddress("p@gmail.com");
+    userProfile.setFullName("Prerna");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile1);
+    user.setId(2);
+    user.setUsername("Prerna");
+    user.setPassword("password1@@");
 
-        session = new MockHttpSession();
-        session.setAttribute("loggeduser", user);
+    Image image = new Image();
+    image.setId(1);
+    image.setTitle("new");
+    image.setDescription("This image is for testing purpose");
+    image.setUser(user1);
 
-        MockMultipartFile mockImage = new MockMultipartFile("file", "image.jpg", "octet-stream", "some_image".getBytes());
+    Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
 
-        String tags = "dog,labrador";
+    this.mockMvc.perform(get("/editImage")
+        .param("imageId", "1")
+        .session(session))
+        .andExpect(model().attribute("editError", "Only the owner of the image can edit the image"));
+  }
 
-        Image image = new Image();
-        image.setTitle("new");
-        image.setDescription("This image is for testing purpose");
-        this.mockMvc.perform(multipart("/images/upload")
-            .file(mockImage)
-            .param("tags", tags)
-            .flashAttr("newImage", image)
-            .session(session))
-            .andExpect(model().attribute("wrongImage", "Please upload png, bmp, gif, jpeg and wbmp image file type"));
-    }
+  //This test checks the controller logic when the owner of the image sends the DELETE request to delete the image and checks whether the logic returns the html file 'images.html'
+  @Test
+  public void deleteImageWithOwnerOfTheImage() throws Exception {
+    User user = new User();
+    UserProfile userProfile = new UserProfile();
+    userProfile.setId(1);
+    userProfile.setEmailAddress("a@gmail.com");
+    userProfile.setFullName("Abhi Mahajan");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile);
+    user.setId(1);
+    user.setUsername("Abhi");
+    user.setPassword("password1@");
+
+    session = new MockHttpSession();
+    session.setAttribute("loggeduser", user);
+
+    Image image = new Image();
+    image.setId(1);
+    image.setTitle("new");
+    image.setDescription("This image is for testing purpose");
+    image.setUser(user);
+
+    Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
+
+    this.mockMvc.perform(delete("/deleteImage")
+        .param("imageId", "1")
+        .session(session))
+        .andExpect(redirectedUrl("/images"));
+  }
+
+
+  //This test checks the controller logic when non owner of the image sends the DELETE request to delete the image and checks whether the Model type object contains the desired attribute with desired value
+  @Test
+  public void deleteImageWithNonOwnerOfTheImage() throws Exception {
+    User user = new User();
+    UserProfile userProfile = new UserProfile();
+    userProfile.setId(1);
+    userProfile.setEmailAddress("a@gmail.com");
+    userProfile.setFullName("Abhi Mahajan");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile);
+    user.setId(1);
+    user.setUsername("Abhi");
+    user.setPassword("password1@");
+
+    session = new MockHttpSession();
+    session.setAttribute("loggeduser", user);
+
+    User user1 = new User();
+    UserProfile userProfile1 = new UserProfile();
+    userProfile.setId(2);
+    userProfile.setEmailAddress("p@gmail.com");
+    userProfile.setFullName("Prerna");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile1);
+    user.setId(2);
+    user.setUsername("Prerna");
+    user.setPassword("password1@@");
+
+    Image image = new Image();
+    image.setId(1);
+    image.setTitle("new");
+    image.setDescription("This image is for testing purpose");
+    image.setUser(user1);
+
+    Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
+
+    this.mockMvc.perform(delete("/deleteImage")
+        .param("imageId", "1")
+        .session(session))
+        .andExpect(model().attribute("deleteError", "Only the owner of the image can delete the image"));
+  }
+
+  //This test checks the controller logic when the logged in submits the image to be uploaded is has valid file type,
+  // if not then check the Model type object contains the desired attribute with desired value
+  @Test
+  public void uploadUnsupportedImageWithPostRequest() throws Exception {
+    User user = new User();
+    UserProfile userProfile = new UserProfile();
+    userProfile.setId(1);
+    userProfile.setEmailAddress("a@gmail.com");
+    userProfile.setFullName("Abhi Mahajan");
+    userProfile.setMobileNumber("9876543210");
+    user.setProfile(userProfile);
+    user.setId(1);
+    user.setUsername("Abhi");
+    user.setPassword("password1@");
+
+    session = new MockHttpSession();
+    session.setAttribute("loggeduser", user);
+
+    MockMultipartFile mockImage = new MockMultipartFile("file", "image.jpg", "octet-stream", "some_image".getBytes());
+
+    String tags = "dog,labrador";
+
+    Image image = new Image();
+    image.setTitle("new");
+    image.setDescription("This image is for testing purpose");
+    this.mockMvc.perform(multipart("/images/upload")
+        .file(mockImage)
+        .param("tags", tags)
+        .flashAttr("newImage", image)
+        .session(session))
+        .andExpect(model().attribute("wrongImage", "Please upload png, bmp, gif, jpeg and wbmp image file type"));
+  }
 
 }
 

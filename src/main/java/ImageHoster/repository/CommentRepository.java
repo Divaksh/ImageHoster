@@ -17,7 +17,7 @@ public class CommentRepository {
   @PersistenceUnit(unitName = "imageHoster")
   private EntityManagerFactory emf;
 
-  public Comment createComment(Comment comment){
+  public Comment createComment(Comment comment) {
 
     //The method receives the comment object to be persisted in the database
     //Creates an instance of EntityManager
@@ -41,11 +41,11 @@ public class CommentRepository {
   //Returns the list of all the comment fetched from the database
   public List<Comment> getAllComments(Integer imageId) {
     EntityManager em = emf.createEntityManager();
-    try{
+    try {
       TypedQuery<Comment> typedQuery = em.createQuery("SELECT c from Comment c where c.image.id =:imageId", Comment.class).setParameter("imageId", imageId);
       List<Comment> resultList = typedQuery.getResultList();
       return resultList;
-    } catch (NoResultException nre){
+    } catch (NoResultException nre) {
       return null;
     }
   }

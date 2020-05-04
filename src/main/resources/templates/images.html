@@ -11,22 +11,22 @@
 <body>
 <h1>Welcome User. These are the images</h1>
 <main id="images">
-    <post th:each="i : ${images}">
-        <p>
-        <div>
-            <img th:src="'data:image/jpeg;base64,'+${i.imageFile}"/>
-        </div>
+  <post th:each="i : ${images}">
+    <p>
+    <div>
+      <img th:src="'data:image/jpeg;base64,'+${i.imageFile}"/>
+    </div>
 
-        <!--Added id along with the title to make more unique identifier for retrieving an image-->
-        <a th:href="'/images/' +${i.id} +'/' +${i.title}">
-            <h3 th:text="${i.title}">Title of image</h3>
-        </a>
-        <i>Posted On: </i> <span th:text="${i.date}"></span>
-        <br>
-        <br>
-        <hr>
-        </p>
-    </post>
+    <!--Added id along with the title to make more unique identifier for retrieving an image-->
+    <a th:href="'/images/' +${i.id} +'/' +${i.title}">
+      <h3 th:text="${i.title}">Title of image</h3>
+    </a>
+    <i>Posted On: </i> <span th:text="${i.date}"></span>
+    <br>
+    <br>
+    <hr>
+    </p>
+  </post>
 </main>
 </body>
 </html>

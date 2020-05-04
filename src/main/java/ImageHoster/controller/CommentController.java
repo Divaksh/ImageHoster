@@ -34,10 +34,10 @@ public class CommentController {
 
   @RequestMapping(value = "/image/{imageId}/{imageTitle}/comments", method = RequestMethod.POST)
   public String addComment(@PathVariable("imageId") Integer imageId, @PathVariable("imageTitle") String title, @RequestParam("comment") String text, HttpSession session,
-      Model model, final RedirectAttributes redirectAttributes){
+      Model model, final RedirectAttributes redirectAttributes) {
     Image image = imageService.getImage(imageId);
 
-    if(text.isEmpty()){
+    if (text.isEmpty()) {
       String error = "Comment can not be empty";
       model.addAttribute("emptyCommentError", error);
       redirectAttributes.addAttribute("emptyCommentError", error);

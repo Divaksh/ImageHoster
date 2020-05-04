@@ -18,7 +18,7 @@ public class CommentService {
   }
 
   //The method calls the getAllComments() method in the Repository and returns the all comments on an image as a list
-  public List<Comment> getAllComments(Integer imageId){
+  public List<Comment> getAllComments(Integer imageId) {
     return commentRepository.getAllComments(imageId);
   }
 
