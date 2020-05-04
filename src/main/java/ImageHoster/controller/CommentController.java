@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class CommentController {
@@ -33,8 +34,17 @@ public class CommentController {
 
   @RequestMapping(value = "/image/{imageId}/{imageTitle}/comments", method = RequestMethod.POST)
   public String addComment(@PathVariable("imageId") Integer imageId, @PathVariable("imageTitle") String title, @RequestParam("comment") String text, HttpSession session,
-      Model model){
+      Model model, final RedirectAttributes redirectAttributes){
     Image image = imageService.getImage(imageId);
+
+    if(text.isEmpty()){
+      String error = "Comment can not be empty";
+      model.addAttribute("emptyCommentError", error);
+      redirectAttributes.addAttribute("emptyCommentError", error);
+      redirectAttributes.addFlashAttribute("emptyCommentError", error);
+      return "redirect:/images/" + imageId + "/" + title;
+    }
+
     User loggedInUser = (User) session.getAttribute("loggeduser");
     Comment comment = new Comment(); // Initializing comment object so all data can be stored
     comment.setImage(image);
